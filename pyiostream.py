@@ -63,10 +63,35 @@ def Repr(stream: OStream):
     stream.format = '%r'
 
 
+
+"""REPL Helpers"""
+
+# Suppress echoing of OStream objects in REPL
+def _displayhook(value):
+    """
+    In REPL OStream objects echo unwanted repr, change displayhook
+    to exclude OStream objects, so they behave like None when echoed.
+    """
+    if isinstance(value, OStream):
+        return None
+    else:
+        _displayhook_bak(value)
+
+_displayhook_bak = sys.displayhook
+sys.displayhook = _displayhook
+
+
+cout = OStream()
+
+# no inspection see:
+# https://gist.github.com/pylover/7870c235867cf22817ac5b096defb768
+# ref from: https://stackoverflow.com/questions/39847884/can-i-get-pycharm-to-suppress-a-particular-warning-on-a-single-line
+
+
 """Testing and Examples"""
 def test_example():
     """Example of using."""
-    cout = OStream()
+    cout = OStream()  # noqa noinspection PyShadowingNames
 
     cout << "The average of " << 1 << " and " << 3 << " is: " << (1+3)/2 << endl;
     cout << "Decimal " << 269 << " in hexadecimal is: " << Hex << 269 << endl;
