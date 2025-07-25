@@ -13,6 +13,11 @@ cout << "1+1 = " << 1+1 << endl;
 cout << "hex(1+1) = " << Hex << 1+1 << "\n" << endl;
 ```
 
+## Installation
+The Wizard `pip` will guide you through the package installation process.
+
+Run `pip install .` inside the same folder containing the `setup.cfg` file.
+
 ## Note:
 Main goal of the project now is to implement basic IOStream like functionality with basic manipulators. Custom IOManipulators can be made, however, the implementation with OStream will likely change; So only use predefined IOManipulators to avoid breaking.
 
