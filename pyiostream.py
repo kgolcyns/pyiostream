@@ -9,11 +9,11 @@ from typing import Optional
 """Main Classes"""
 
 class OStream:
-    DEFAULT_FORMAT = ''
-    DEFAULT_PREFIX = ''
-    DEFAULT_SUFFIX = ''
-    DEFAULT_PREPROCESSOR = None
-    DEFAULT_POSTPROCESSOR = None
+    DEFAULT_FORMAT: str = ''
+    DEFAULT_PREFIX: str = ''
+    DEFAULT_SUFFIX: str = ''
+    DEFAULT_PREPROCESSOR: Optional[Callable] = None
+    DEFAULT_POSTPROCESSOR: Optional[Callable] = None
 
     def __init__(self, output: Optional[IOBase] = None):
         self.output: IOBase = sys.stdout if output is None else output
