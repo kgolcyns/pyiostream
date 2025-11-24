@@ -48,9 +48,6 @@ class OStream:
                 #output_str = (self.format % argument) if self.format else str(argument)
                 self.output.write(output_str)
             finally:
-                #self.format = ''
-                # TODO: Make DEFAULT_... attributes set using properties, so that self.... is set immediately after a instance one is changed,
-                #  otherwise changing the defaults won't have any effect until at least one item is outputted, then they get set here to the new default.
                 self._reset_formatters()
 
         return self
@@ -69,6 +66,8 @@ class OStream:
         self.postprocessor = self.DEFAULT_POSTPROCESSOR  # Callable, input 1 str, output 1 str
 
     def restore_default_formatters(self):
+        """Restores the default values of the formatters to that of the OStream class.
+        Note: Remember to call _reset_formatters() to take immediate effect."""
         del self.DEFAULT_FORMAT
         del self.DEFAULT_PREFIX
         del self.DEFAULT_SUFFIX
@@ -101,23 +100,15 @@ def flush(stream: OStream):
 @IOManipulator
 def Hex(stream: OStream):
     """Sets uppercase hex format specifier, with prefix 0x (x is lowercase)."""
-    #stream.format = '0x%X'
     stream.format = 'X'
     stream.prefix = '0x'
 
 @IOManipulator
 def Str(stream: OStream):  # Redundant, but for show
-    #stream.format = '%s'
-
-    #stream.format = ''
-    # noinspection GrazieInspection
     stream.preprocessor = str  # to be consistent with repr
-    # (and to respect any modifications to default format (e.g.
-    # using cout.format to specify width  or justification))
 
 @IOManipulator
 def Repr(stream: OStream):
-    #stream.format = '%r'
     stream.preprocessor = repr
 
 
