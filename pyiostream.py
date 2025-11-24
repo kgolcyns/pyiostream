@@ -1,14 +1,32 @@
 # pyiostream.py
-import sys
+from __future__ import annotations
 
+import sys
+from collections.abc import Callable
+from io import IOBase
+from typing import Optional
 
 """Main Classes"""
 
 class OStream:
+    DEFAULT_FORMAT = ''
+    DEFAULT_PREFIX = ''
+    DEFAULT_SUFFIX = ''
+    DEFAULT_PREPROCESSOR = None
+    DEFAULT_POSTPROCESSOR = None
 
-    def __init__(self, output=None):
-        self.output = sys.stdout if output is None else output
-        self.format = ''
+    def __init__(self, output: Optional[IOBase] = None):
+        self.output: IOBase = sys.stdout if output is None else output
+
+        # Declare and Initialize formatters (pycharm complains despite reset_formatters() being called)
+        # <editor-fold desc="formatters redeclaration for nagging linter">
+        self.format: str = ''  # format specifier passed to format() built in.
+        self.prefix: str = ''
+        self.suffix: str = ''
+        self.preprocessor: Optional[Callable] = None  # optional function to be called the argument object before passed to format()
+        self.postprocessor: Optional[Callable] = None  # optional function to be called on the output of format()
+        # </editor-fold>
+        self._reset_formatters()
 
     def __lshift__(self, argument):
         """The special method which Python calls when you use
@@ -18,12 +36,38 @@ class OStream:
             argument(self)
         else:
             try:
-                output_str = (self.format % argument) if self.format else str(argument)
+                if callable(self.preprocessor):
+                    argument = self.preprocessor(argument)
+
+                output_str = format(argument, self.format)
+
+                if callable(self.postprocessor):
+                    output_str = self.postprocessor(output_str)
+
+                output_str = f'{self.prefix}{output_str}{self.suffix}'
+                #output_str = (self.format % argument) if self.format else str(argument)
                 self.output.write(output_str)
             finally:
-                self.format = ''
+                #self.format = ''
+                # TODO: Make DEFAULT_... attributes set using properties, so that self.... is set immediately after a instance one is changed,
+                #  otherwise changing the defaults won't have any effect until at least one item is outputted, then they get set here to the new default.
+                self._reset_formatters()
 
         return self
+
+    def _reset_formatters(self):
+        """
+        Resets all formatting attributes to their normal/Default value;
+        Called after a format and write has been made. Not typically necessary or useful for users to call this,:
+        TODO: implement a "restore_default_formatters" method to unset (del) all the DEFAULT_ instance attributes,
+         effectively reverting to using the class attributes
+        set DEFAULT_... can be changed to allow formatters to persist between write indefinitely.
+        """
+        self.format = self.DEFAULT_FORMAT
+        self.prefix = self.DEFAULT_PREFIX
+        self.suffix = self.DEFAULT_SUFFIX
+        self.preprocessor = self.DEFAULT_PREPROCESSOR
+        self.postprocessor = self.DEFAULT_POSTPROCESSOR  # Callable, input 1 str, output 1 str
 
 
 class IOManipulator:
@@ -52,15 +96,23 @@ def flush(stream: OStream):
 @IOManipulator
 def Hex(stream: OStream):
     """Sets uppercase hex format specifier, with prefix 0x (x is lowercase)."""
-    stream.format = '0x%X'
+    #stream.format = '0x%X'
+    stream.format = 'X'
+    stream.prefix = '0x'
 
 @IOManipulator
 def Str(stream: OStream):  # Redundant, but for show
-    stream.format = '%s'
+    #stream.format = '%s'
+
+    #stream.format = ''
+    # noinspection GrazieInspection
+    stream.preprocessor = str  # to be consistent with repr (and to respect any modifications to default format (e.g.
+    # using cout.format to specify width  or justification))
 
 @IOManipulator
 def Repr(stream: OStream):
-    stream.format = '%r'
+    #stream.format = '%r'
+    stream.preprocessor = repr
 
 
 
