@@ -58,10 +58,9 @@ class OStream:
     def _reset_formatters(self):
         """
         Resets all formatting attributes to their normal/Default value;
-        Called after a format and write has been made. Not typically necessary or useful for users to call this,:
-        TODO: implement a "restore_default_formatters" method to unset (del) all the DEFAULT_ instance attributes,
-         effectively reverting to using the class attributes
+        Called after a format and write has been made. Not typically necessary or useful for users to call this;
         set DEFAULT_... can be changed to allow formatters to persist between write indefinitely.
+        (IOManipulators still have priority for individual calls)
         """
         self.format = self.DEFAULT_FORMAT
         self.prefix = self.DEFAULT_PREFIX
@@ -69,6 +68,12 @@ class OStream:
         self.preprocessor = self.DEFAULT_PREPROCESSOR
         self.postprocessor = self.DEFAULT_POSTPROCESSOR  # Callable, input 1 str, output 1 str
 
+    def restore_default_formatters(self):
+        del self.DEFAULT_FORMAT
+        del self.DEFAULT_PREFIX
+        del self.DEFAULT_SUFFIX
+        del self.DEFAULT_PREPROCESSOR
+        del self.DEFAULT_POSTPROCESSOR
 
 class IOManipulator:
 
@@ -106,7 +111,8 @@ def Str(stream: OStream):  # Redundant, but for show
 
     #stream.format = ''
     # noinspection GrazieInspection
-    stream.preprocessor = str  # to be consistent with repr (and to respect any modifications to default format (e.g.
+    stream.preprocessor = str  # to be consistent with repr
+    # (and to respect any modifications to default format (e.g.
     # using cout.format to specify width  or justification))
 
 @IOManipulator
@@ -127,7 +133,7 @@ def _displayhook(value):
     if isinstance(value, OStream):
         return None
     else:
-        _displayhook_bak(value)
+        return _displayhook_bak(value)
 
 _displayhook_bak = sys.displayhook
 sys.displayhook = _displayhook
