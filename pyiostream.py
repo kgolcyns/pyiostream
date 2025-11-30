@@ -1,6 +1,8 @@
 # pyiostream.py
 from __future__ import annotations
 
+import decimal
+decimal.getcontext().rounding=decimal.ROUND_HALF_UP  #TODO: implement preserving context, later
 import sys
 from collections.abc import Callable
 from io import IOBase
@@ -112,6 +114,21 @@ def Repr(stream: OStream):
     stream.preprocessor = repr
 
 
+# Rounding Stuff
+# TODO: Convert this to subclass of IOManipulator notation, instead of wrapper notation
+def _convert_and_round(number, ndigits):
+    if not isinstance(number, decimal.Decimal):
+        number = decimal.Decimal(str(number))
+    return round(number, ndigits)
+
+def Round(ndigits=None):
+
+    @IOManipulator
+    def RoundManipulator(stream: OStream):
+        stream.preprocessor = lambda number: _convert_and_round(number, ndigits)
+
+    return RoundManipulator
+
 
 """REPL Helpers"""
 
@@ -150,6 +167,14 @@ def test_example():
     cout << "Flushing Toilet..." << flush << "...Complete!" << endl;
     cout << "Exiting Test\n" << endl;
 
+def test_rounding():
+    n = 2.55
+    cout << n << " rounded to the nearest tenth should be 2.6" << endl;
+    cout << "\tBut stupid rounding makes it 2.5 --> " << round(n, 1) << endl;
+    cout << "\nWith pyiostream's improved Round(...) IOManipulator, "
+    cout << "\nFloating point like numbers are rounded: 'As Taught in School':\n\t"
+    cout << "2.6 --> " << Round(1) << n<< '\n' << endl;
 
 if __name__ == '__main__':
     test_example()
+    test_rounding()
