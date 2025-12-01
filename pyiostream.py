@@ -169,11 +169,14 @@ def test_example():
 
 def test_rounding():
     n = 2.55
-    cout << n << " rounded to the nearest tenth should be 2.6" << endl;
-    cout << "\tBut stupid rounding makes it 2.5 --> " << round(n, 1) << endl;
+    cout << f"{n} rounded to the nearest tenth should be {decimal.Decimal(str(n)).quantize(decimal.Decimal('1.1'), rounding=decimal.ROUND_HALF_UP)}" << endl;
+    cout << "But stupid rounding makes it " << n << " --> " << round(n, 1) << endl;
     cout << "\nWith pyiostream's improved Round(...) IOManipulator, "
     cout << "\nFloating point like numbers are rounded: 'As Taught in School':\n\t"
-    cout << "2.6 --> " << Round(1) << n<< '\n' << endl;
+    cout << f"{n} --> " << Round(1) << n << '\n\t';
+    cout << f"{n} --> " << Round() << n << '\n\t';
+    cout << "2.5 --> " << Round() << 2.5 << '\n\t';
+    cout << "2.5 --> " << Round(0) << 2.5 << '\n' << endl;
 
 if __name__ == '__main__':
     test_example()
