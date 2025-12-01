@@ -121,8 +121,8 @@ def _convert_and_round(number, ndigits):
         number = decimal.Decimal(str(number))
     return round(number, ndigits)
 
-def Round(ndigits=None):
-
+def Round(ndigits=0):
+    # NOTE: when ndigits=None, Decimal.__round__() does not obey the rounding context,
     @IOManipulator
     def RoundManipulator(stream: OStream):
         stream.preprocessor = lambda number: _convert_and_round(number, ndigits)
